@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>二维码</title>
+		<script src="js/jquery-1.8.0.js"></script>
+		<!--处理中文及生成二维码-->
+		<script src="js/utf.js"></script>
+		<script src="js/jquery.qrcode.js"></script>
+		<!--打包下载-->
+		<!-- <script src="../scripts/file/jszip.min.js"></script>
+		<script src="../scripts/file/FileSaver.min.js"></script> -->
+		<script type="text/javascript">
+			var	qrText = 'https://blog.csdn.net/qq_22103321',//要生成二维码的信息,文本或URL 
+	    	strHeader = '二维码',//顶部文字描述
+	    	strFooter = '生成一个二维码',//底部文字描述
+	    	qrCodeSize = [300, 500, 1000],//二维码尺寸
+	        picWidth = [20, 34, 66],//图片额外宽
+	        picHeight = [60, 100, 200],//图片额外高
+	        fontSize = [14, 24, 46],//描述文字大小
+	        logoSize = [80, 110, 220],//logo图片
+	        imgb64Arr = [];//图片集
+	        function qrCodeNext(i,v) {
+        if (i < qrCodeSize.length) {
+            var qrcode = $('#qrcodeCanvas').qrcode({
+                render: 'canvas',
+                text: v ,
+                width: qrCodeSize[i],
+                height: qrCodeSize[i],
+                background: '#ffffff',
+                foreground: '#000000',
+            });
+            var canvas = qrcode.find('canvas').get(i);
+            //设置logo
+           /* var logo = new Image(logoSize[i], logoSize[i]);
+            logo.src = '/static/img/toux.png';
+            logo.onload = function () {*/
+                //设置二维码
+                var img = new Image();
+                img.src = canvas.toDataURL('image/png');
+                img.onload = function () {
+                    //重新绘制画布
+                    var w = img.width + picWidth[i], h = img.height + picHeight[i];
+                    canvas.width = w;
+                    canvas.height = h;
+                    var ctx = canvas.getContext('2d');
+                    //设置画布背景
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    //设置文字样式
+                    ctx.fillStyle = '#000000';
+                    ctx.font = 'bold ' + 14 + 'px 微软雅黑';
+                    ctx.textAlign = 'center';
+                    //绘制顶部文字描述
+                    //ctx.fillText(strHeader, w / 2, picHeight[i] / 3);
+                    //绘制二维码
+                    ctx.drawImage(img, picWidth[i] / 2, picHeight[i] / 2);
+                    //绘制logo
+                   // ctx.drawImage(logo, (w - logo.width) / 2, (h - logo.height) / 2, logo.width, logo.height);
+                    //绘制底部文字
+                    ctx.fillText("设备编号:"+v, w / 2, h - picHeight[i] / 50);
+                    var data = canvas.toDataURL('image/png', 1);
+                    //显示二维码,只显示一张
+                   /* if (i == 0) {
+                        var imgOk = new Image();
+                        imgOk.src = data;
+                        $('#img_list').append(imgOk);
+                    }*/
+                    imgb64Arr.push(data);
+                    //qrCodeNext(i + 1,v);
+                }
+           // }
+        }
+
+    }
+			$(document).ready(function() {
+
+				 qrCodeNext(0,'要生成二维码的信息,文本或URL');
+				/*$("#qrcodeCanvas").qrcode({
+					render : "canvas",    //设置渲染方式，有table和canvas，使用canvas方式渲染性能相对来说比较好
+					text : "这是修改了官文的js文件，此时生成的二维码支持中文和LOGO",    //扫描了二维码后的内容显示,在这里也可以直接填一个网址，扫描二维码后
+					width : "200",               //二维码的宽度
+					height : "200",              //二维码的高度
+					background : "#ffffff",       //二维码的后景色
+					foreground : "#000000",        //二维码的前景色
+					src: 'img/photo.jpg'             //二维码中间的图片
+				});*/
+
+			});
+			//打包下载二维码
+		    function downQRCode(size) {
+		    	var a = document.createElement('a');
+                var event = new MouseEvent('click');
+                 a.download = strFooter || "photo"; // 设置图片名称
+                a.href = imgb64Arr[0];
+                a.dispatchEvent(event);
+		        /*if (size > 0) {
+		            for (var i = 0; i < qrCodeSize.length; i++) {
+		                if (qrCodeSize[i] == size) {
+		                    var a = document.createElement('a');
+		                    var event = new MouseEvent('click');
+		                    a.download = size + '_' + size + '_' + strHeader + '_' + strFooter;
+		                    a.href = imgb64Arr[i];
+		                    a.dispatchEvent(event);
+		                }
+		            }
+		        } else {
+		            var zip = new JSZip();
+		            var img = zip.folder(strHeader + '_' + strFooter);
+		            for (var i = 0; i < qrCodeSize.length; i++) {
+		                var b64 = imgb64Arr[i];
+		                var b64Split = b64.split(',');
+		                img.file(qrCodeSize[i] + '_' + qrCodeSize[i] + '_' + strHeader + '_' + strFooter + '.png', b64Split[1], { base64: true }); //获取图片文件
+		            }
+		            zip.generateAsync({ type: "blob" }).then(function (content) {
+		                saveAs(content, strHeader + '_' + strFooter + '.zip');
+		            });
+		        }*/
+		    }
+
+		</script>
+	</head>
+	<body>
+		<h2>该二维码支持中文和LOGO</h2>
+      	<div id="qrcodeCanvas"></div>
+      	<a href="javascript:downQRCode(300);" type="png">下载</a>
+	</body>
+</html>
